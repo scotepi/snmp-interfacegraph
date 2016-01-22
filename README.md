@@ -1,6 +1,8 @@
 # snmp-interfacegraph
 Simple PHP and Javascript page for drawing graphs based on interface usage from SNMP
 
+![screenshot_2016-01-22_10-59-03](https://cloud.githubusercontent.com/assets/1680867/12515739/c2a76f04-c0f7-11e5-9b44-3201724e8b10.png)
+
 # Instructions
 1.  Install on a PHP server with php snmp enabled
 2.  Configuring the $hosts array in snmpGet.php to include the hosts you want on your network to be able to monitor.
