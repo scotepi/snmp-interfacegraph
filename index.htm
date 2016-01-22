@@ -1,0 +1,191 @@
+<!doctype html>
+<html>
+<head>
+    <!-- Scipt by Scott Peters, @scotepi, Version 1.0 -->
+    
+    <title>SNMP Graph</title>
+    
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    
+    <style>
+    html, body { margin: 0; padding: 0; }
+    
+    .click {
+        cursor: pointer;
+    }
+    
+    .fullChart {
+        width: 100%;
+        height: 100%;
+    }
+    </style>
+    <script type="text/javascript">
+    // You can change these to suit your needs
+    var hashDelimiter = ','; // Change this if it conflicts with your naming conventions
+    var maxDataPoints = 24; // How many datapoints before we start erasing them
+    var chartType = 'area'; // line and area are supported
+    var pollingInterval = 10; // number of seconds before requesting new data
+    var snmpProcessor = 'snmpGet.php'; // Path to the snmp ajax script
+    
+    
+    
+    // Global variables
+    var charts = null;
+    var chartOptions = null;
+    var chartData = null;
+    
+    $(function() {
+        if (location.hash) {
+            var hash = location.hash.substring(1).split(hashDelimiter);
+            
+            if (hash.length == 3) {
+                selectInterface(hash[0], hash[1], hash[2]);
+            } else if (hash.length == 2) {
+                selectHost(hash[0], hash[1]);
+            } else {
+                alert("Unkown Hash");
+            }
+        } else {
+            $.post(snmpProcessor, function( data ) {
+                $("#title").text("Pick a Device");
+                $("#content").html('');
+                $("#content").append("<ul/>");
+                var ul = $("#content ul");
+                
+                $.each(data, function(host, name) {
+                    var li = $('<li/>').text(name).addClass('click').on('click', function() { selectHost(host, name) }).appendTo(ul);
+                });
+                
+            });
+        }
+    });
+    
+    function selectHost(host, name) {
+        location.hash = host+hashDelimiter+name;
+        //console.log(host, name);
+        
+        $.post(snmpProcessor, {hostname: host}, function( data ) {
+            $("#title").text("Pick an Interface");
+            $("#content").html('');
+            $("#content").append("<ul/>");
+            var ul = $("#content ul");
+            
+            $.each(data, function(id, name) {
+                var li = $('<li/>').text(name).addClass('click').on('click', function() { selectInterface(host, id, name) }).appendTo(ul);
+            });
+        });
+    }
+    
+    function selectInterface(host, id, name) {
+        location.hash = host+hashDelimiter+id+hashDelimiter+name;
+        //console.log(host,id,name);
+        
+        // Prep the page
+        $("#title").hide();
+        $("#content").html('').addClass('fullChart');
+        fixBodyHeight();
+        $( window ).resize(fixBodyHeight);
+        
+        // Start Preforming Ajax Calls
+        getChartData(host, id);
+        setInterval(function() { getChartData(host, id) }, pollingInterval * 1000);
+        
+        // Load the Chart
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(function () {
+            chartData = new google.visualization.DataTable();
+            chartData.addColumn('datetime', 'Time');
+            chartData.addColumn('number', 'Traffic In', 'style');
+            chartData.addColumn('number', 'Traffic Out');
+            
+            chartOptions = {
+                title: name,
+                curveType: 'function',
+                legend: { 
+                        position: 'top',
+                        alignment: 'end',
+                    },
+                vAxis: { 
+                        format: '# Mbps',
+                        minValue: 0,
+                    },
+                hAxis: { 
+                    },
+                colors: ['#0f0', '#00f'],
+                series: {
+                        0: {
+                            'line-width': 3,
+                        },
+                        1: {
+                            'line-width': 1,
+                        },
+                    },
+                pointSize: 4,
+                chartArea: {
+                        right: 5,
+                        left: '7%',
+                        bottom: 20,
+                        top: 60,
+                    },
+            };
+            
+            // Pick the chart type
+            if (chartType == 'area') {
+                chartOptions.pointSize = 0;
+                charts = new google.visualization.AreaChart(document.getElementById('content'));
+            } else {
+                charts = new google.visualization.LineChart(document.getElementById('content'));
+            }
+            
+            charts.draw(chartData, chartOptions);
+        });
+    }
+    
+    function getChartData(host, id) {
+        $.post(snmpProcessor, {hostname: host, interface: id}, function( d ) {
+            var data = d.data;
+            if (data.inDiff > 0 && data.outDiff > 0) {
+                addChartPoint(new Date(data.time * 1000), data.timeDiff, d.ifSpeed, data.inDiff, data.outDiff);
+            }
+        });
+    }
+    
+    function addChartPoint(time, timeDiff, ifSpeed, dataIn, dataOut) {
+        console.log('addChartPoint', time, timeDiff, ifSpeed, dataIn, dataOut);
+        
+        // Math needs to be fixed
+        dataIn = (dataIn * 8 * 100) / (timeDiff * ifSpeed);
+        dataOut = (dataOut * 8 * 100) / (timeDiff * ifSpeed);
+        
+        if (chartData) {
+            chartData.addRow([time, dataIn, dataOut]);
+            
+            // Delete Rows over maxDataPoints
+            if (chartData.getNumberOfRows() > maxDataPoints) {
+                chartData.removeRows(0, chartData.getNumberOfRows() - maxDataPoints + 1);
+            }
+            
+            // Redraw the chart
+            charts.draw(chartData, chartOptions);
+        }
+        
+        
+    }
+    
+    function fixBodyHeight() {
+        //console.log('fixBodyHeight');
+        $("#content").css('height', $( window ).innerHeight()+'px');
+        if (chartData) {
+            charts.draw(chartData, chartOptions);
+        }
+    }
+    </script>
+</head>
+<body style="overflow: hidden;">
+
+<h1 id="title"></h1>
+<div id="content"></div>
+
+</body>
+</html>
