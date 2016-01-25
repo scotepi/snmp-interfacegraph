@@ -17,3 +17,5 @@ The script uses URL hashes to allow you to bookmark and frame in the pages for s
 # iFrame Example
 `<iframe src="//server/index.htm#hostname,ifnum,ifname" width="400" height="200" frameborder="0"></iframe>`
 
+`<iframe src="//server/index.htm?hostname=myhost&interface=ifnum&name=ifname" width="400" height="200" frameborder="0"></iframe>`
+
