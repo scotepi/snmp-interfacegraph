@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <!-- Scipt by Scott Peters, @scotepi, Version 1.0 -->
+    <!-- Scipt by Scott Peters, @scotepi, Version 1.1 -->
     
     <title>SNMP Graph</title>
     
@@ -46,6 +46,18 @@
             } else {
                 alert("Unkown Hash");
             }
+        } else if (location.search) {
+            var search = parseQueryString();
+            
+            if (search.hostname && search.interface && search.name) {
+                selectInterface(search.hostname, search.interface, decodeURIComponent(search.name));
+            } else if (search.hostname && search.name) {
+                selectHost(search.hostname, decodeURIComponent(search.name));
+            } else {
+                alert("Unkown Search Query");
+            }
+            
+            
         } else {
             $.post(snmpProcessor, function( data ) {
                 $("#title").text("Pick a Device");
@@ -179,6 +191,24 @@
         if (chartData) {
             charts.draw(chartData, chartOptions);
         }
+    }
+    
+    
+    // Based on http://www.joezimjs.com/javascript/3-ways-to-parse-a-query-string-in-a-url/
+    function parseQueryString() {
+        var queryString = location.search.substr(1);
+        var params = {}, queries, temp, i, l;
+     
+        // Split into key/value pairs
+        queries = queryString.split("&");
+     
+        // Convert the array of strings into an object
+        for ( i = 0, l = queries.length; i < l; i++ ) {
+            temp = queries[i].split('=');
+            params[temp[0]] = temp[1];
+        }
+     
+        return params;
     }
     </script>
 </head>

@@ -3,8 +3,13 @@ session_start();
 
 /**
     Script by Scott Peters, @scotepi
-    Version 1.0
+    Version 1.1
     
+    1.1:
+        - Added support for location.search on index.htm by using
+            * ?hostname=host&name=My Host
+            * ?hostname=host&interface=4&name=My Interface
+            
     1.0:
         - Inital Release
 **/
