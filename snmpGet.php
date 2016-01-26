@@ -3,10 +3,13 @@ session_start();
 
 /**
     Script by Scott Peters, @scotepi
-    Version 1.1
+    Version 1.2
     
     1.2:
-        - Fixed overflow 
+        - Fixed overflow: none from hiding the host & interface list on small frames
+        - Disabled the last console.log
+        - Added another example host
+        
     1.1:
         - Added support for location.search on index.htm by using
             * ?hostname=host&name=My Host
