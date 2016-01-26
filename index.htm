@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <!-- Scipt by Scott Peters, @scotepi, Version 1.2 -->
+    <!-- Scipt by Scott Peters, @scotepi, Version 1.3 -->
     
     <title>SNMP Graph</title>
     
@@ -37,50 +37,68 @@
     var chartData = null;
     
     $(function() {
-        if (location.hash) {
-            var hash = location.hash.substring(1).split(hashDelimiter);
-            
-            if (hash.length == 3) {
-                selectInterface(hash[0], hash[1], hash[2]);
-            } else if (hash.length == 2) {
-                selectHost(hash[0], hash[1]);
-            } else {
-                alert("Unkown Hash");
-            }
-        } else if (location.search) {
-            var search = parseQueryString();
-            
-            if (search.hostname && search.interface && search.name) {
-                selectInterface(search.hostname, search.interface, decodeURIComponent(search.name));
-            } else if (search.hostname && search.name) {
-                selectHost(search.hostname, decodeURIComponent(search.name));
-            } else {
-                alert("Unkown Search Query");
-            }
-            
-            
-        } else {
-            $.post(snmpProcessor, function( data ) {
-                $("#title").text("Pick a Device");
-                $("#content").html('');
-                $("#content").append("<ul/>");
-                var ul = $("#content ul");
-                
-                $.each(data, function(host, name) {
-                    var li = $('<li/>').text(name).addClass('click').on('click', function() { selectHost(host, name) }).appendTo(ul);
-                });
-                
-            });
-        }
+        decidePage();
     });
+    
+    $(window).on('hashchange', function(){ 
+        decidePage();
+    });
+    
+    function decidePage() {
+        if (location.hash) {
+            pageByHash();
+        } else if (location.search) {
+            pageBySearch();
+        } else {
+            listHosts();
+        }
+    }
+    
+    function pageByHash() {
+        var hash = location.hash.substring(1).split(hashDelimiter);
+                
+        if (hash.length == 3) {
+            selectInterface(hash[0], hash[1], hash[2]);
+        } else if (hash.length == 2) {
+            selectHost(hash[0], hash[1]);
+        } else {
+            alert("Unkown Hash");
+        }
+    }
+    
+    function pageBySearch() {
+        var search = parseQueryString();
+        
+        if (search.hostname && search.interface && search.name) {
+            selectInterface(search.hostname, search.interface, decodeURIComponent(search.name));
+        } else if (search.hostname && search.name) {
+            selectHost(search.hostname, decodeURIComponent(search.name));
+        } else {
+            alert("Unkown Search Query");
+        }
+    }
+    
+    function listHosts() {
+        $.post(snmpProcessor, function( data ) {
+        $("#title").show().text("Pick a Device");
+        $("#content").html('').removeClass('fullChart');
+        $("#content").append("<ul/>");
+        var ul = $("#content ul");
+        
+        $.each(data, function(host, name) {
+            var li = $('<li/>').text(name).addClass('click').on('click', function() { selectHost(host, name) }).appendTo(ul);
+        });
+        
+    });
+    }
     
     function selectHost(host, name) {
         location.hash = host+hashDelimiter+name;
         //console.log(host, name);
         
         $.post(snmpProcessor, {hostname: host}, function( data ) {
-            $("#title").text("Pick an Interface");
-            $("#content").html('');
+            $("#title").show().text("Pick an Interface");
+            $("#content").html('').removeClass('fullChart');
             $("#content").append("<ul/>");
             var ul = $("#content ul");
             

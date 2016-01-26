@@ -3,7 +3,10 @@ session_start();
 
 /**
     Script by Scott Peters, @scotepi
-    Version 1.2
+    Version 1.3
+    
+    1.3:
+        - The forward and back buttons will now work for changing graphs & pages
     
     1.2:
         - Fixed overflow: none from hiding the host & interface list on small frames
