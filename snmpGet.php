@@ -5,6 +5,8 @@ session_start();
     Script by Scott Peters, @scotepi
     Version 1.1
     
+    1.2:
+        - Fixed overflow 
     1.1:
         - Added support for location.search on index.htm by using
             * ?hostname=host&name=My Host
@@ -22,6 +24,7 @@ $snmpVersion = SNMP::VERSION_2C; // SNMP::VERSION_2C or SNMP::VERSION_1, only te
 // 'hostname' => 'Friendly Name',
 $hosts = array(
     'gateway' => 'Main Gateway',
+    'switch' => 'Main Switch',
 );
 
 
