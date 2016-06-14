@@ -97,7 +97,7 @@ if (isset($_REQUEST['hostname'])) {
             switch ($mib) {
                 case 1: $_SESSION[$hostname][$if]['interface'] = $value; break;
                 case 15: $_SESSION[$hostname][$if]['ifSpeed'] = $value * 1000000; break;
-                case 18: $_SESSION[$hostname][$if]['name'] = $value; break;
+                case 18: $_SESSION[$hostname][$if]['name'] = ($value) ? $value : "Interface " . $_SESSION[$hostname][$if]['interface']; break;
             }
             
             $_SESSION[$hostname][$if]['host'] = $hosts[$hostname];
@@ -108,7 +108,7 @@ if (isset($_REQUEST['hostname'])) {
                             );
             
             if (isset($_SESSION[$hostname][$if]['name']) and !empty($_SESSION[$hostname][$if]['name'])) {
-                $interfaces[$if] = $_SESSION[$hostname][$if]['interface'] . ' ' . $_SESSION[$hostname][$if]['name'];
+                $interfaces[$if] = $_SESSION[$hostname][$if]['interface'] . ': ' . $_SESSION[$hostname][$if]['name'];
             }
         }
         
