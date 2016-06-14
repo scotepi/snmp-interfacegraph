@@ -24,10 +24,11 @@
     <script type="text/javascript">
     // You can change these to suit your needs
     var hashDelimiter = ','; // Change this if it conflicts with your naming conventions
-    var maxDataPoints = 24; // How many datapoints before we start erasing them
+    var maxDataPoints = 18; // How many datapoints before we start erasing them
     var chartType = 'area'; // line and area are supported
     var pollingInterval = 10; // number of seconds before requesting new data
     var snmpProcessor = 'snmpGet.php'; // Path to the snmp ajax script
+    var invertInOut = false; // Switch in and out traffic
     
     
     
@@ -57,7 +58,12 @@
     function pageByHash() {
         var hash = location.hash.substring(1).split(hashDelimiter);
                 
-        if (hash.length == 3) {
+        if (hash.length == 4) {
+            selectInterface(hash[0], hash[1], hash[2]);
+            invertInOut = true;
+            location.hash = location.hash+hashDelimiter+"true";
+            console.log(location.hash);
+        } else if (hash.length == 3) {
             selectInterface(hash[0], hash[1], hash[2]);
         } else if (hash.length == 2) {
             selectHost(hash[0], hash[1]);
@@ -177,19 +183,23 @@
         $.post(snmpProcessor, {hostname: host, interface: id}, function( d ) {
             var data = d.data;
             if (data.inDiff > 0 && data.outDiff > 0) {
-                addChartPoint(new Date(data.time * 1000), data.timeDiff, d.ifSpeed, data.inDiff, data.outDiff);
+                if (invertInOut) {
+                    addChartPoint(new Date(data.time * 1000), data.timeDiff, data.outDiff, data.inDiff);
+                } else {
+                    addChartPoint(new Date(data.time * 1000), data.timeDiff, data.inDiff, data.outDiff);
+                }
             }
         });
     }
     
-    function addChartPoint(time, timeDiff, ifSpeed, dataIn, dataOut) {
-        //console.log('addChartPoint', time, timeDiff, ifSpeed, dataIn, dataOut);
+    function addChartPoint(time, timeDiff, dataIn, dataOut) {
+        //console.log('addChartPoint', time, timeDiff, dataIn, dataOut);
         
-        // Math needs to be fixed
-        dataIn = (dataIn * 8 * 100) / (timeDiff * ifSpeed);
-        dataOut = (dataOut * 8 * 100) / (timeDiff * ifSpeed);
+        dataIn = dataIn / 10000 / timeDiff;
+        dataOut = dataOut / 10000 / timeDiff;
         
         if (chartData) {
+            //console.log('chartData', time, dataIn, dataOut);
             chartData.addRow([time, dataIn, dataOut]);
             
             // Delete Rows over maxDataPoints

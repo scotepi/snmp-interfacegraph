@@ -5,6 +5,11 @@ session_start();
     Script by Scott Peters, @scotepi
     Version 1.3
     
+    1.4:
+        - Removed Speed being part of the math, it had nothing to do with the change over time
+        - Fixed interfaces without a name, they will show as Interface iface
+        - Added an option hash to invert in & out, just add ,true to the end of the hash string
+        
     1.3:
         - The forward and back buttons will now work for changing graphs & pages
     
@@ -59,10 +64,6 @@ if (isset($_REQUEST['hostname'])) {
         $ifInOctets = $snmp->get('.1.3.6.1.2.1.2.2.1.10.' . $interface);
         $ifOutOctets = $snmp->get('.1.3.6.1.2.1.2.2.1.16.' . $interface);
         
-        if (!isset($_SESSION[$hostname][$interface]['ifSpeed'])) {
-            $_SESSION[$hostname][$interface]['ifSpeed'] = $snmp->get('.1.3.6.1.2.1.2.2.1.5.' . $interface);
-        }
-        
         // Over Time
         $timeDiff = $time - $prev['time'];
         $inDiff = $ifInOctets - $prev['ifInOctets'];
@@ -96,7 +97,6 @@ if (isset($_REQUEST['hostname'])) {
             
             switch ($mib) {
                 case 1: $_SESSION[$hostname][$if]['interface'] = $value; break;
-                case 15: $_SESSION[$hostname][$if]['ifSpeed'] = $value * 1000000; break;
                 case 18: $_SESSION[$hostname][$if]['name'] = ($value) ? $value : "Interface " . $_SESSION[$hostname][$if]['interface']; break;
             }
             
