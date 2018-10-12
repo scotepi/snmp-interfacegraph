@@ -195,8 +195,8 @@
     function addChartPoint(time, timeDiff, dataIn, dataOut) {
         //console.log('addChartPoint', time, timeDiff, dataIn, dataOut);
         
-        dataIn = dataIn / 100000 / timeDiff;
-        dataOut = dataOut / 100000 / timeDiff;
+        dataIn = (dataIn*8) / (1024*1024) / timeDiff;
+        dataOut = (dataOut*8) / (1024*1024) / timeDiff;
         
         if (chartData) {
             //console.log('chartData', time, dataIn, dataOut);
